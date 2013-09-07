@@ -17,17 +17,17 @@
 
 #pragma once
 
-#include "GlRAIIBase.h"
+#include "RAIIBase.h"
 
 namespace gl {
 
-class GlFrameBufferObject : public GlObject {
+class FrameBufferObject : public ::gl::utils::GlObject {
 
-	mutable GLint m_i_OldFboID;	//The ID of the old FBO when we will bind our instance FBO (it's to restore the old FBO)
+	mutable GLint m_OldFboID;	//The ID of the old FBO when we will bind our instance FBO (it's to restore the old FBO)
 
 public:
-	GlFrameBufferObject(void);
-	virtual ~GlFrameBufferObject(void);
+	FrameBufferObject(void);
+	virtual ~FrameBufferObject(void);
 
 	/// Bind this FBO as current render target
 	virtual void bind() const;
@@ -43,8 +43,6 @@ public:
 	//--------------------------------------------------------------------
 	//Hardware capabilities -> Be carefull (initialize Opengl before calling those funcs)
 	//---------------------
-	//Check if the hardware is capable to support the FBO
-	static bool checkIfHardwareIsCapable();
 	//Check if the active FBO is ready to do a render task
 	static bool checkFramebufferStatus();
 	// BEGIN : Static methods global to all FBOs

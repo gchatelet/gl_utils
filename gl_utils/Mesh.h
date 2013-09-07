@@ -1,8 +1,8 @@
 #pragma once
 
-#include "GlRAIIBase.h"
-#include "GlBufferObjects.h"
-#include "GlVertexArrayObject.h"
+#include "RAIIBase.h"
+#include "BufferObjects.h"
+#include "VertexArrayObject.h"
 
 #include <glm/glm.hpp>
 
@@ -19,10 +19,10 @@ struct VertexPosUv0 {
     }
 };
 
-class GlMesh: public ::gl::utils::IBindable {
+class Mesh: public ::gl::utils::IBindable {
 public:
-    GlMesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount);
-    virtual ~GlMesh();
+    Mesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount);
+    virtual ~Mesh();
 
     virtual void bind() const;
     virtual void unbind() const;
@@ -35,14 +35,14 @@ protected:
 
 private:
     const size_t vertexCount;
-    const gl::GlVertexArrayObject vao;
-    const gl::GlStaticVbo vbo;
+    const gl::VertexArrayObject vao;
+    const gl::StaticVbo vbo;
 };
 
-class GlIndexedMesh: public GlMesh {
+class IndexedMesh: public Mesh {
 public:
-    GlIndexedMesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount, const GLuint *pIBegin, const size_t indexCount);
-    virtual ~GlIndexedMesh();
+    IndexedMesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount, const GLuint *pIBegin, const size_t indexCount);
+    virtual ~IndexedMesh();
 
     virtual void bind() const;
     virtual void unbind() const;
@@ -52,7 +52,7 @@ protected:
 
 private:
     const size_t indexCount;
-    const gl::GlStaticIndexedVbo ivbo;
+    const gl::StaticIndexedVbo ivbo;
 };
 
 
