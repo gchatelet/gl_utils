@@ -1,5 +1,14 @@
-#include "GlFrameBufferObject.hpp"
+#include "FrameBufferObject.hpp"
 #include <iostream>
+
+extern void glGenFramebuffers(GLsizei n, GLuint *ids);
+extern void glDeleteFramebuffers(GLsizei n, const GLuint *framebuffers);
+extern void glBindFramebuffer(GLenum target, GLuint framebuffer);
+
+extern void glFramebufferTexture1D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+extern void glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+extern void glFramebufferTexture3D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint layer);
+extern GLenum glCheckFramebufferStatus(    GLenum      target);
 
 namespace gl {
 
@@ -13,39 +22,39 @@ inline static GLuint allocateFboObject() {
 
 }  // namespace
 
-GlFrameBufferObject::GlFrameBufferObject(void)
-  : m_i_OldFboID(0), GlObject(allocateFboObject())
+FrameBufferObject::FrameBufferObject(void)
+  : GlObject(allocateFboObject()), m_OldFboID(0)
 {
 }
 
-GlFrameBufferObject::~GlFrameBufferObject(void)
+FrameBufferObject::~FrameBufferObject(void)
 {
 	glDeleteFramebuffers(1, &id);
 }
 
-void GlFrameBufferObject::bind() const {
+void FrameBufferObject::bind() const {
   // Only binds if m_fboId is different than the currently bound FBO
-	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &m_i_OldFboID );
-	if (id != (GLuint)m_i_OldFboID) {
+	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &m_OldFboID );
+	if (id != (GLuint)m_OldFboID) {
 		glBindFramebuffer(GL_FRAMEBUFFER, id);
 	}
 }
 
-void GlFrameBufferObject::unbind() const {
+void FrameBufferObject::unbind() const {
   // Restore the previous active FBO
 	// Returns FBO binding to the previously enabled FBO
-	if (id != (GLuint)m_i_OldFboID) {
-		glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_i_OldFboID);
+	if (id != (GLuint)m_OldFboID) {
+		glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)m_OldFboID);
 	}
 }
 
-void GlFrameBufferObject::disable()
+void FrameBufferObject::disable()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 /// Bind a texture to the "attachment" point of this FBO (GL_COLOR_ATTACHMENT0_EXT, textarget, texID)
-void GlFrameBufferObject::attachTexture( GLenum attachment, GLenum texType, GLuint texId,int mipLevel, int zSlice)
+void FrameBufferObject::attachTexture( GLenum attachment, GLenum texType, GLuint texId,int mipLevel, int zSlice)
 {
 	if (texType == GL_TEXTURE_1D) {
 		glFramebufferTexture1D( GL_FRAMEBUFFER, attachment,
@@ -65,22 +74,15 @@ void GlFrameBufferObject::attachTexture( GLenum attachment, GLenum texType, GLui
 //--------------------------------------------------------------------
 // hardware test
 
-int GlFrameBufferObject::getMaxColorAttachments()
+int FrameBufferObject::getMaxColorAttachments()
 {
 	GLint maxAttach = 0;
 	glGetIntegerv( GL_MAX_COLOR_ATTACHMENTS, &maxAttach );
 	return maxAttach;
 }
 
-bool GlFrameBufferObject::checkIfHardwareIsCapable()
-{
-  return glfwExtensionSupported("GL_framebuffer_object")
-    || glfwExtensionSupported("GL_ARB_framebuffer_object")
-    || glfwExtensionSupported("GL_EXT_framebuffer_object");
-}
-
 // Checks framebuffer status.
-bool GlFrameBufferObject::checkFramebufferStatus() {
+bool FrameBufferObject::checkFramebufferStatus() {
   GLenum status;
   status = (GLenum) glCheckFramebufferStatus(GL_FRAMEBUFFER);
   switch(status) {

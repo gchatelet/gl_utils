@@ -1,8 +1,12 @@
-#include "GlMesh.h"
+#include "Mesh.h"
 
-#include "GlUtils.h"
+#include "Utils.h"
 
 #include <stdexcept>
+
+extern void glBufferData(GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage);
+extern void glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid * pointer);
+extern void glEnableVertexAttribArray(GLuint index);
 
 namespace gl {
 
@@ -30,7 +34,7 @@ GLuint checkType(GLuint primitiveType) {
 
 }  // namespace
 
-GlMesh::GlMesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount) :
+Mesh::Mesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount) :
                 primitiveType(checkType(primitiveType)), vertexCount(vertexCount) {
     auto vaoBound = scope_bind(vao);
     auto vboBound = scope_bind(vbo);
@@ -43,40 +47,40 @@ GlMesh::GlMesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t v
     glCheckError();
 }
 
-GlMesh::~GlMesh() {
+Mesh::~Mesh() {
 }
-void GlMesh::bind() const {
+void Mesh::bind() const {
     vao.bind();
 }
-void GlMesh::draw() const {
+void Mesh::draw() const {
     callDraw();
     glCheckError();
 }
-void GlMesh::unbind() const {
+void Mesh::unbind() const {
     vao.unbind();
 }
-void GlMesh::callDraw() const {
+void Mesh::callDraw() const {
     glDrawArrays(primitiveType, 0, vertexCount);
 }
 
-GlIndexedMesh::GlIndexedMesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount, const GLuint *pIBegin, const size_t indexCount) :
-                GlMesh(primitiveType, pVBegin, vertexCount), indexCount(indexCount), ivbo() {
+IndexedMesh::IndexedMesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount, const GLuint *pIBegin, const size_t indexCount) :
+                Mesh(primitiveType, pVBegin, vertexCount), indexCount(indexCount), ivbo() {
     auto ivboBound = scope_bind(ivbo);
     glBufferData(ivbo.target, indexCount * sizeof(GLuint), pIBegin, ivbo.usage);
     glCheckError();
 }
-GlIndexedMesh::~GlIndexedMesh() {
+IndexedMesh::~IndexedMesh() {
 }
-void GlIndexedMesh::bind() const {
-    GlMesh::bind();
+void IndexedMesh::bind() const {
+    Mesh::bind();
     ivbo.bind();
 }
-void GlIndexedMesh::callDraw() const {
+void IndexedMesh::callDraw() const {
     glDrawElements(primitiveType, indexCount, GL_UNSIGNED_INT, 0);
 }
-void GlIndexedMesh::unbind() const {
+void IndexedMesh::unbind() const {
     ivbo.unbind();
-    GlMesh::unbind();
+    Mesh::unbind();
 }
 
 } /* namespace gl */
