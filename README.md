@@ -60,4 +60,4 @@ Pseudocode Example
 License
 -------
 
-    see COPYING file
+    see LICENSE file
