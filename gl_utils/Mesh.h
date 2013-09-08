@@ -4,24 +4,27 @@
 #include "BufferObjects.h"
 #include "VertexArrayObject.h"
 
-#include <glm/glm.hpp>
+#include <vector>
 
 namespace gl {
 
-struct VertexPosUv0 {
-    glm::vec3 position;
-    glm::vec2 uv0;
-    VertexPosUv0(glm::vec3 pos) :
-            position(pos) {
-    }
-    VertexPosUv0(glm::vec3 pos, glm::vec2 uv0) :
-            position(pos), uv0(uv0) {
-    }
+struct VertexAttributeDescriptor {
+    size_t attributeSize;
+    GLint glDimension;
+    GLenum glComponentType;
+    GLboolean glNormalized;
 };
 
-class Mesh: public ::gl::utils::IBindable {
+template<typename T>
+VertexAttributeDescriptor describe(GLint dimension, GLenum componentType = GL_FLOAT, GLboolean normalized = GL_FALSE) {
+    return {sizeof(T), dimension, componentType, normalized};
+}
+
+typedef std::vector<VertexAttributeDescriptor> VertexAttributeDescriptors;
+
+class Mesh : public ::gl::utils::IBindable {
 public:
-    Mesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount);
+    Mesh(GLuint primitiveType, const VertexAttributeDescriptors& vertexDescriptors, const void *pVBegin, const size_t vertexCount);
     virtual ~Mesh();
 
     virtual void bind() const;
@@ -39,9 +42,9 @@ private:
     const gl::StaticVbo vbo;
 };
 
-class IndexedMesh: public Mesh {
+class IndexedMesh : public Mesh {
 public:
-    IndexedMesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount, const GLuint *pIBegin, const size_t indexCount);
+    IndexedMesh(GLuint primitiveType, const VertexAttributeDescriptors&, const void *pVBegin, const size_t vertexCount, const GLuint *pIBegin, const size_t indexCount);
     virtual ~IndexedMesh();
 
     virtual void bind() const;
@@ -54,6 +57,5 @@ private:
     const size_t indexCount;
     const gl::StaticIndexedVbo ivbo;
 };
-
 
 } /* namespace gl */

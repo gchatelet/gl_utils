@@ -32,19 +32,30 @@ GLuint checkType(GLuint primitiveType) {
     }
 }
 
+size_t computeVertexSize(const VertexAttributeDescriptors& vertexDescriptors) {
+    size_t vertexSize = 0;
+    for (const auto& vertexDescriptor : vertexDescriptors)
+        vertexSize += vertexDescriptor.attributeSize;
+    return vertexSize;
+}
+
 }  // namespace
 
-Mesh::Mesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount) :
+Mesh::Mesh(GLuint primitiveType, const VertexAttributeDescriptors& vertexDescriptors, const void *pVBegin, const size_t vertexCount) :
                 primitiveType(checkType(primitiveType)), vertexCount(vertexCount) {
+    const size_t vertexSize = computeVertexSize(vertexDescriptors);
     auto vaoBound = scope_bind(vao);
     auto vboBound = scope_bind(vbo);
-    glBufferData(vbo.target, vertexCount * sizeof(VertexPosUv0), pVBegin, vbo.usage);
-    glCheckError();
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPosUv0), 0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(VertexPosUv0), (const GLvoid*) (sizeof(glm::vec3)));
-    glEnableVertexAttribArray(1);
-    glCheckError();
+    glBufferData(vbo.target, vertexCount * vertexSize, pVBegin, vbo.usage);
+
+    GLuint index = 0;
+    GLsizei offset = 0;
+    for (const auto& descriptor : vertexDescriptors) {
+        glVertexAttribPointer(index, descriptor.glDimension, descriptor.glComponentType, descriptor.glNormalized, vertexSize, reinterpret_cast<const GLvoid *>(offset));
+        glEnableVertexAttribArray(index);
+        ++index;
+        offset += descriptor.attributeSize;
+    }
 }
 
 Mesh::~Mesh() {
@@ -63,8 +74,9 @@ void Mesh::callDraw() const {
     glDrawArrays(primitiveType, 0, vertexCount);
 }
 
-IndexedMesh::IndexedMesh(GLuint primitiveType, const VertexPosUv0 *pVBegin, const size_t vertexCount, const GLuint *pIBegin, const size_t indexCount) :
-                Mesh(primitiveType, pVBegin, vertexCount), indexCount(indexCount), ivbo() {
+IndexedMesh::IndexedMesh(GLuint primitiveType, const VertexAttributeDescriptors& vertexDescriptors, const void *pVBegin, const size_t vertexCount, const GLuint *pIBegin,
+                         const size_t indexCount) :
+                Mesh(primitiveType, vertexDescriptors, pVBegin, vertexCount), indexCount(indexCount), ivbo() {
     auto ivboBound = scope_bind(ivbo);
     glBufferData(ivbo.target, indexCount * sizeof(GLuint), pIBegin, ivbo.usage);
     glCheckError();
