@@ -55,6 +55,10 @@ private:
     const BINDABLE& bindable;
 };
 
+/**
+ * Base of an OpenGl object.
+ * It manages the generation/deletion of the underlying OpenGl id.
+ */
 class GlObject: public IBindable {
 public:
     explicit GlObject(GLuint id) : id(id) {}

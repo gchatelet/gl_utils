@@ -35,7 +35,7 @@ GLuint checkType(GLuint primitiveType) {
 size_t computeVertexSize(const VertexAttributeDescriptors& vertexDescriptors) {
     size_t vertexSize = 0;
     for (const auto& vertexDescriptor : vertexDescriptors)
-        vertexSize += vertexDescriptor.attributeSize;
+        vertexSize += vertexDescriptor.stride;
     return vertexSize;
 }
 
@@ -51,10 +51,10 @@ Mesh::Mesh(GLuint primitiveType, const VertexAttributeDescriptors& vertexDescrip
     GLuint index = 0;
     GLsizei offset = 0;
     for (const auto& descriptor : vertexDescriptors) {
-        glVertexAttribPointer(index, descriptor.glDimension, descriptor.glComponentType, descriptor.glNormalized, vertexSize, reinterpret_cast<const GLvoid *>(offset));
+        glVertexAttribPointer(index, descriptor.size, descriptor.type, descriptor.normalized, vertexSize, reinterpret_cast<const GLvoid *>(offset));
         glEnableVertexAttribArray(index);
         ++index;
-        offset += descriptor.attributeSize;
+        offset += descriptor.stride;
     }
 }
 
